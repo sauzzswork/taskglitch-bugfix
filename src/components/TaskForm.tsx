@@ -17,7 +17,7 @@ import { Priority, Status, Task } from '@/types';
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSubmit: (value: Omit<Task, 'id'> & { id?: string }) => void;
+  onSubmit: (value: Omit<Task, 'id' | 'createdAt' | 'completedAt'> & { id?: string }) => void;
   existingTitles: string[];
   initial?: Task | null;
 }
@@ -55,29 +55,35 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
   const duplicateTitle = useMemo(() => {
     const current = title.trim().toLowerCase();
     if (!current) return false;
-    const others = initial ? existingTitles.filter(t => t.toLowerCase() !== initial.title.toLowerCase()) : existingTitles;
+    const others = initial
+      ? existingTitles.filter(t => t.toLowerCase() !== initial.title.toLowerCase())
+      : existingTitles;
     return others.map(t => t.toLowerCase()).includes(current);
   }, [title, existingTitles, initial]);
 
   const canSubmit =
     !!title.trim() &&
     !duplicateTitle &&
-    typeof revenue === 'number' && revenue >= 0 &&
-    typeof timeTaken === 'number' && timeTaken > 0 &&
+    typeof revenue === 'number' &&
+    revenue >= 0 &&
+    typeof timeTaken === 'number' &&
+    timeTaken > 0 &&
     !!priority &&
     !!status;
 
   const handleSubmit = () => {
-    const safeTime = typeof timeTaken === 'number' && timeTaken > 0 ? timeTaken : 1; // auto-correct
-    const payload: Omit<Task, 'id'> & { id?: string } = {
+    const safeTime = typeof timeTaken === 'number' && timeTaken > 0 ? timeTaken : 1;
+
+    const payload: Omit<Task, 'id' | 'createdAt' | 'completedAt'> & { id?: string } = {
       title: title.trim(),
       revenue: typeof revenue === 'number' ? revenue : 0,
       timeTaken: safeTime,
-      priority: ((priority || 'Medium') as Priority),
-      status: ((status || 'Todo') as Status),
+      priority: (priority || 'Medium') as Priority,
+      status: (status || 'Todo') as Status,
       notes: notes.trim() || undefined,
       ...(initial ? { id: initial.id } : {}),
     };
+
     onSubmit(payload);
     onClose();
   };
@@ -119,22 +125,42 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <FormControl fullWidth required>
               <InputLabel id="priority-label">Priority</InputLabel>
-              <Select labelId="priority-label" label="Priority" value={priority} onChange={e => setPriority(e.target.value as Priority)}>
+              <Select
+                labelId="priority-label"
+                label="Priority"
+                value={priority}
+                onChange={e => setPriority(e.target.value as Priority)}
+              >
                 {priorities.map(p => (
-                  <MenuItem key={p} value={p}>{p}</MenuItem>
+                  <MenuItem key={p} value={p}>
+                    {p}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
             <FormControl fullWidth required>
               <InputLabel id="status-label">Status</InputLabel>
-              <Select labelId="status-label" label="Status" value={status} onChange={e => setStatus(e.target.value as Status)}>
+              <Select
+                labelId="status-label"
+                label="Status"
+                value={status}
+                onChange={e => setStatus(e.target.value as Status)}
+              >
                 {statuses.map(s => (
-                  <MenuItem key={s} value={s}>{s}</MenuItem>
+                  <MenuItem key={s} value={s}>
+                    {s}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Stack>
-          <TextField label="Notes" value={notes} onChange={e => setNotes(e.target.value)} multiline minRows={2} />
+          <TextField
+            label="Notes"
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            multiline
+            minRows={2}
+          />
         </Stack>
       </DialogContent>
       <DialogActions>
@@ -146,5 +172,3 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
     </Dialog>
   );
 }
-
-
