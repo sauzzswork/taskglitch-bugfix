@@ -17,7 +17,9 @@ import { Priority, Status, Task } from '@/types';
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSubmit: (value: Omit<Task, 'id' | 'createdAt' | 'completedAt'> & { id?: string }) => void;
+  onSubmit: (
+    value: Omit<Task, 'id' | 'createdAt' | 'completedAt'> & { id?: string }
+  ) => void;
   existingTitles: string[];
   initial?: Task | null;
 }
@@ -25,7 +27,13 @@ interface Props {
 const priorities: Priority[] = ['High', 'Medium', 'Low'];
 const statuses: Status[] = ['Todo', 'In Progress', 'Done'];
 
-export default function TaskForm({ open, onClose, onSubmit, existingTitles, initial }: Props) {
+export default function TaskForm({
+  open,
+  onClose,
+  onSubmit,
+  existingTitles,
+  initial,
+}: Props) {
   const [title, setTitle] = useState('');
   const [revenue, setRevenue] = useState<number | ''>('');
   const [timeTaken, setTimeTaken] = useState<number | ''>('');
@@ -35,6 +43,7 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
 
   useEffect(() => {
     if (!open) return;
+
     if (initial) {
       setTitle(initial.title);
       setRevenue(initial.revenue);
@@ -55,9 +64,13 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
   const duplicateTitle = useMemo(() => {
     const current = title.trim().toLowerCase();
     if (!current) return false;
+
     const others = initial
-      ? existingTitles.filter(t => t.toLowerCase() !== initial.title.toLowerCase())
+      ? existingTitles.filter(
+          t => t.toLowerCase() !== initial.title.toLowerCase()
+        )
       : existingTitles;
+
     return others.map(t => t.toLowerCase()).includes(current);
   }, [title, existingTitles, initial]);
 
@@ -72,12 +85,13 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
     !!status;
 
   const handleSubmit = () => {
-    const safeTime = typeof timeTaken === 'number' && timeTaken > 0 ? timeTaken : 1;
-
-    const payload: Omit<Task, 'id' | 'createdAt' | 'completedAt'> & { id?: string } = {
+    const payload: Omit<Task, 'id' | 'createdAt' | 'completedAt'> & {
+      id?: string;
+    } = {
       title: title.trim(),
       revenue: typeof revenue === 'number' ? revenue : 0,
-      timeTaken: safeTime,
+      timeTaken:
+        typeof timeTaken === 'number' && timeTaken > 0 ? timeTaken : 1,
       priority: (priority || 'Medium') as Priority,
       status: (status || 'Todo') as Status,
       notes: notes.trim() || undefined,
@@ -91,6 +105,7 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>{initial ? 'Edit Task' : 'Add Task'}</DialogTitle>
+
       <DialogContent>
         <Stack spacing={2} mt={1}>
           <TextField
@@ -102,13 +117,16 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
             required
             autoFocus
           />
+
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextField
               label="Revenue"
               type="number"
               value={revenue}
-              onChange={e => setRevenue(e.target.value === '' ? '' : Number(e.target.value))}
-              inputProps={{ min: 0, step: 1 }}
+              onChange={e =>
+                setRevenue(e.target.value === '' ? '' : Number(e.target.value))
+              }
+              inputProps={{ min: 0 }}
               required
               fullWidth
             />
@@ -116,19 +134,23 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
               label="Time Taken (h)"
               type="number"
               value={timeTaken}
-              onChange={e => setTimeTaken(e.target.value === '' ? '' : Number(e.target.value))}
-              inputProps={{ min: 1, step: 1 }}
+              onChange={e =>
+                setTimeTaken(
+                  e.target.value === '' ? '' : Number(e.target.value)
+                )
+              }
+              inputProps={{ min: 1 }}
               required
               fullWidth
             />
           </Stack>
+
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <FormControl fullWidth required>
-              <InputLabel id="priority-label">Priority</InputLabel>
+              <InputLabel>Priority</InputLabel>
               <Select
-                labelId="priority-label"
-                label="Priority"
                 value={priority}
+                label="Priority"
                 onChange={e => setPriority(e.target.value as Priority)}
               >
                 {priorities.map(p => (
@@ -138,12 +160,12 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
                 ))}
               </Select>
             </FormControl>
+
             <FormControl fullWidth required>
-              <InputLabel id="status-label">Status</InputLabel>
+              <InputLabel>Status</InputLabel>
               <Select
-                labelId="status-label"
-                label="Status"
                 value={status}
+                label="Status"
                 onChange={e => setStatus(e.target.value as Status)}
               >
                 {statuses.map(s => (
@@ -154,6 +176,7 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
               </Select>
             </FormControl>
           </Stack>
+
           <TextField
             label="Notes"
             value={notes}
@@ -163,9 +186,14 @@ export default function TaskForm({ open, onClose, onSubmit, existingTitles, init
           />
         </Stack>
       </DialogContent>
+
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit} variant="contained" disabled={!canSubmit}>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          disabled={!canSubmit}
+        >
           {initial ? 'Save Changes' : 'Add Task'}
         </Button>
       </DialogActions>

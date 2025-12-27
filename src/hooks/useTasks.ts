@@ -67,7 +67,6 @@ export function useTasks(): UseTasksState {
     });
   }
 
-  // ✅ SINGLE, CLEAN INITIAL LOAD
   useEffect(() => {
     let isMounted = true;
 
@@ -159,6 +158,10 @@ export function useTasks(): UseTasksState {
     setLastDeleted(null);
   }, [lastDeleted]);
 
+  const clearLastDeleted = useCallback(() => {
+    setLastDeleted(null);
+  }, []);
+
   return {
     tasks,
     loading,
@@ -170,5 +173,6 @@ export function useTasks(): UseTasksState {
     updateTask,
     deleteTask,
     undoDelete,
+    clearLastDeleted,
   };
 }
